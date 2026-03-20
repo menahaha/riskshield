@@ -3,109 +3,451 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RiskShield AI - Gig Worker Insurance</title>
-    <!-- Google Fonts: Inter -->
+    <title>RiskShield AI (React)</title>
+    
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
+    
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- App Styles -->
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Login state overrides */
-        body.logged-out .sidebar, body.logged-out .topbar { display: none !important; }
-        body.logged-out .main-content { margin: 0; padding: 0; height: 100vh; }
-        body.logged-out .pages-container { padding: 0 !important; }
-        
-        #content-frame {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
-        }
-    </style>
+
+    <!-- React & Babel CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- React Router DOM (HashRouter) -->
+    <script src="https://unpkg.com/@remix-run/router@1.16.1/dist/router.umd.min.js"></script>
+    <script src="https://unpkg.com/react-router@6.23.1/dist/umd/react-router.development.js"></script>
+    <script src="https://unpkg.com/react-router-dom@6.23.1/dist/umd/react-router-dom.development.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="logged-out">
-    <div class="app-container">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar glass-panel">
-            <div class="logo">
-                <i class="fa-solid fa-shield-halved text-neon-blue drop-glow-blue"></i>
-                <span>RiskShield <span class="text-neon-purple drop-glow-purple">AI</span></span>
-            </div>
-            
-            <nav class="nav-menu" id="nav-menu">
-                <a href="#" class="nav-item active" data-target="dashboard">
-                    <i class="fa-solid fa-chart-pie"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="#" class="nav-item" data-target="plans">
-                    <i class="fa-solid fa-layer-group"></i>
-                    <span>Plans</span>
-                </a>
-                <a href="#" class="nav-item" data-target="live-monitoring">
-                    <i class="fa-solid fa-satellite-dish"></i>
-                    <span>Live Monitor</span>
-                </a>
-                <a href="#" class="nav-item" data-target="wallet">
-                    <i class="fa-solid fa-wallet"></i>
-                    <span>Wallet</span>
-                </a>
-                <a href="#" class="nav-item" data-target="risk-insights">
-                    <i class="fa-solid fa-brain"></i>
-                    <span>Insights</span>
-                </a>
-                <a href="#" class="nav-item" data-target="profile">
-                    <i class="fa-solid fa-user-astronaut"></i>
-                    <span>Profile</span>
-                </a>
-                <a href="#" id="logout-btn" class="nav-item mt-auto border-t border-gray-dark" style="margin-top: auto; padding-top: 1rem;">
-                    <i class="fa-solid fa-arrow-right-from-bracket text-neon-pink"></i>
-                    <span class="text-neon-pink">Logout</span>
-                </a>
-            </nav>
+<body>
+    <div id="root"></div>
 
-            <div class="sidebar-footer glass-card mini-status border-neon-green">
-                <div class="pulse-dot safe"></div>
-                <div class="status-text">
-                    <span class="label">System Status</span>
-                    <span class="value text-neon-green">All Systems Operational</span>
+    <!-- Our React Application Code -->
+    <script type="text/babel">
+const { useState, useEffect, useRef } = React;
+const { HashRouter, Routes, Route, NavLink, useNavigate, useLocation, Navigate } = ReactRouterDOM;
+
+// Set global Chart.js defaults
+Chart.defaults.color = '#8a8a9d';
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.scale.grid.color = 'rgba(255, 255, 255, 0.05)';
+
+// --- UTILITY COMPONENTS ---
+
+function CustomToggle({ defaultActive = false }) {
+    const [active, setActive] = useState(defaultActive);
+    return (
+        <div className={`custom-toggle ${active ? 'active' : ''}`} onClick={() => setActive(!active)}></div>
+    );
+}
+
+function ChartWrapper({ type, data, options }) {
+    const canvasRef = useRef(null);
+    const chartRef = useRef(null);
+
+    useEffect(() => {
+        if (canvasRef.current) {
+            chartRef.current = new Chart(canvasRef.current, { type, data, options });
+        }
+        return () => {
+            if (chartRef.current) {
+                chartRef.current.destroy();
+            }
+        };
+    }, [type, data, options]);
+
+    return <canvas ref={canvasRef}></canvas>;
+}
+
+// --- PAGE COMPONENTS ---
+
+function Login() {
+    const navigate = useNavigate();
+    const handleLogin = (e) => {
+        e.preventDefault();
+        localStorage.setItem('riskshield_logged_in', 'true');
+        navigate('/dashboard');
+    };
+
+    return (
+        <div className="login-wrapper">
+            <div className="login-bg-shapes">
+                <div className="shape shape-1" style={{ position: 'absolute', filter: 'blur(80px)', zIndex: 1, borderRadius: '50%', opacity: 0.4, width: '300px', height: '300px', background: 'var(--neon-blue)', top: '-100px', left: '-100px' }}></div>
+                <div className="shape shape-2" style={{ position: 'absolute', filter: 'blur(80px)', zIndex: 1, borderRadius: '50%', opacity: 0.4, width: '400px', height: '400px', background: 'var(--neon-purple)', bottom: '-150px', right: '-150px' }}></div>
+                <div className="shape shape-3" style={{ position: 'absolute', filter: 'blur(80px)', zIndex: 1, borderRadius: '50%', opacity: 0.4, width: '200px', height: '200px', background: 'var(--neon-pink)', top: '50%', left: '60%' }}></div>
+            </div>
+
+            <div className="glass-card login-card" style={{ width: '100%', maxWidth: '420px', padding: '3rem 2rem', position: 'relative', zIndex: 10, borderTop: '2px solid var(--neon-blue)', borderBottom: '2px solid var(--neon-purple)', margin: 'auto' }}>
+                <div className="login-logo text-center mb-3">
+                    <i className="fa-solid fa-shield-halved text-neon-blue drop-glow-blue" style={{ fontSize: '3rem', marginBottom: '0.5rem' }}></i>
+                    <h1 style={{ fontSize: '1.8rem', fontWeight: 700 }}>RiskShield <span className="text-neon-purple drop-glow-purple">AI</span></h1>
+                    <p className="text-sm text-gray mt-1">Gig Worker Operations Hub</p>
+                </div>
+
+                <form onSubmit={handleLogin}>
+                    <div className="form-group mb-2" style={{ position: 'relative' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-gray)', fontSize: '0.85rem' }}>Partner ID / Email</label>
+                        <i className="fa-solid fa-user form-icon" style={{ position: 'absolute', left: '1rem', top: '2.4rem', color: 'var(--text-gray)' }}></i>
+                        <input type="text" placeholder="RS-10294" required style={{ width: '100%', background: 'rgba(0, 0, 0, 0.3)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'white', padding: '0.8rem 1rem 0.8rem 2.8rem', borderRadius: 'var(--border-radius-sm)', outline: 'none' }} />
+                    </div>
+                    <div className="form-group mb-3" style={{ position: 'relative' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-gray)', fontSize: '0.85rem' }}>Secure Passkey</label>
+                        <i className="fa-solid fa-lock form-icon" style={{ position: 'absolute', left: '1rem', top: '2.4rem', color: 'var(--text-gray)' }}></i>
+                        <input type="password" placeholder="••••••••" required style={{ width: '100%', background: 'rgba(0, 0, 0, 0.3)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'white', padding: '0.8rem 1rem 0.8rem 2.8rem', borderRadius: 'var(--border-radius-sm)', outline: 'none' }} />
+                    </div>
+
+                    <div className="flex-between mb-3 text-sm">
+                        <label className="flex-center gap-1 cursor-pointer text-gray">
+                            <input type="checkbox" /> Remember me
+                        </label>
+                        <a href="#" className="text-neon-blue">Forgot Passkey?</a>
+                    </div>
+
+                    <button type="submit" className="btn bg-neon-blue text-dark glow-btn-blue full-width text-lg border-none">
+                        Authenticate <i className="fa-solid fa-arrow-right-to-bracket ml-1"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+function Dashboard() {
+    const riskData = {
+        labels: ['Risk', 'Safe'],
+        datasets: [{ data: [28, 72], backgroundColor: ['rgba(255, 255, 255, 0.05)', '#ffea00'], borderWidth: 0, cutout: '80%' }]
+    };
+    const riskOptions = { plugins: { legend: { display: false }, tooltip: { enabled: false } }, maintainAspectRatio: false };
+
+    const trendData = {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+            label: 'Risk Multiplier', data: [1.2, 1.5, 1.1, 2.3, 1.8, 1.0, 1.4],
+            borderColor: '#00f0ff', backgroundColor: 'rgba(0, 240, 255, 0.2)', borderWidth: 2, tension: 0.4, fill: true,
+            pointBackgroundColor: '#06060e', pointBorderColor: '#00f0ff', pointBorderWidth: 2
+        }]
+    };
+    const trendOptions = { plugins: { legend: { display: false } }, maintainAspectRatio: false, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, max: 3 } } };
+
+    return (
+        <div className="dashboard-grid">
+            <div className="glass-card flex-center flex-column">
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-light)' }}>AI Risk Score</h3>
+                <div style={{ position: 'relative', width: '140px', height: '140px', margin: '1.5rem 0 0.5rem' }}>
+                    <ChartWrapper type="doughnut" data={riskData} options={riskOptions} />
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'flex', alignItems: 'baseline' }}>
+                        <span className="text-neon-yellow" style={{ fontSize: '2.5rem', fontWeight: 700 }}>72</span>
+                    </div>
+                </div>
+                <p className="text-neon-yellow drop-glow-yellow mt-1 text-sm">Moderate Risk - Traffic high</p>
+            </div>
+
+            <div className="glass-card">
+                <div className="flex-between">
+                    <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-light)' }}>Workability Score</h3>
+                    <i className="fa-solid fa-briefcase text-neon-green"></i>
+                </div>
+                <div className="mt-2">
+                    <span className="text-neon-green drop-glow-green" style={{ fontSize: '3rem', fontWeight: 700, lineHeight: 1 }}>8.5</span>
+                    <span className="text-gray" style={{ fontSize: '1.2rem', fontWeight: 500 }}>/ 10</span>
+                </div>
+                <p className="text-sm text-gray mt-1 mb-2">Optimal conditions for delivery</p>
+                <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div className="bg-neon-green glow-bg-green" style={{ width: '85%', height: '100%' }}></div>
                 </div>
             </div>
-        </aside>
 
-        <!-- Main Content Area -->
-        <main class="main-content">
-            <!-- Top Navbar -->
-            <header class="topbar glass-panel">
-                <div class="mobile-menu-toggle">
-                    <i class="fa-solid fa-bars"></i>
+            <div className="glass-card border-neon-purple active-plan">
+                <div className="flex-between">
+                    <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-light)' }}>Active Plan</h3>
+                    <span className="glass-pill bg-neon-purple">Premium AI</span>
                 </div>
-                <div class="header-title">
-                    <h2 id="current-page-title">Overview</h2>
+                <div className="mt-2 mb-2" style={{ display: 'flex', alignItems: 'baseline'}}>
+                    <span className="text-gray" style={{fontSize: '1.5rem'}}>₹</span>
+                    <span className="text-white" style={{fontSize: '3.5rem', fontWeight: 700, lineHeight: 1}}>149</span>
+                    <span className="text-gray">/wk</span>
+                </div>
+            </div>
+
+            <div className="glass-card span-3 border-neon-pink" style={{ background: 'rgba(255, 0, 115, 0.05)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                    <div className="pulse-glow-pink" style={{ width: '50px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', background: 'rgba(255, 0, 115, 0.1)', borderRadius: '12px' }}>
+                        <i className="fa-solid fa-triangle-exclamation text-neon-pink"></i>
+                    </div>
+                    <div>
+                        <h4 className="text-neon-pink" style={{ fontSize: '1.1rem', marginBottom: '0.25rem' }}>Alert: Heavy Rain Detected in Your Zone</h4>
+                        <p className="text-light text-sm">Possible ₹200 payout triggering soon if rain continues for 15 mins.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="glass-card span-3">
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-light)', marginBottom: '1rem' }}>Weekly Risk Trends</h3>
+                <div style={{ width: '100%', height: '250px' }}>
+                    <ChartWrapper type="line" data={trendData} options={trendOptions} />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function Plans() {
+    return (
+        <div className="pricing-grid">
+            {/* Basic Plan */}
+            <div className="glass-card pricing-card flex-column hover-lift">
+                <h3 className="plan-name text-white" style={{ fontSize: '1.5rem', marginBottom: '1rem', fontWeight: 600 }}>Basic</h3>
+                <div className="price-display">
+                    <span className="amount text-white" style={{ fontSize: '3rem', fontWeight: 700, lineHeight: 1 }}>₹49</span>
+                    <span className="duration text-gray">/wk</span>
+                </div>
+                <button className="btn border-gray text-white mt-auto full-width" style={{background: 'transparent', border: '1px solid var(--text-gray)'}}>Activate Plan</button>
+            </div>
+
+            {/* Standard Plan */}
+            <div className="glass-card pricing-card border-neon-blue flex-column" style={{ transform: 'scale(1.02)', boxShadow: '0 10px 30px -10px rgba(0, 240, 255, 0.5)' }}>
+                <h3 className="plan-name text-neon-blue drop-glow-blue" style={{ fontSize: '1.5rem', marginBottom: '1rem', fontWeight: 600 }}>Standard</h3>
+                <div className="price-display">
+                    <span className="amount text-white" style={{ fontSize: '3rem', fontWeight: 700, lineHeight: 1 }}>₹99</span>
+                    <span className="duration text-gray">/wk</span>
+                </div>
+                <button className="btn bg-neon-blue text-dark glow-btn-blue mt-auto full-width border-none">Activate Plan</button>
+            </div>
+
+            {/* Premium Plan */}
+            <div className="glass-card pricing-card border-neon-purple flex-column">
+                <h3 className="plan-name text-neon-purple drop-glow-purple" style={{ fontSize: '1.5rem', marginBottom: '1rem', fontWeight: 600 }}>Premium AI</h3>
+                <div className="price-display">
+                    <span className="amount text-white" style={{ fontSize: '3rem', fontWeight: 700, lineHeight: 1 }}>₹149</span>
+                    <span className="duration text-gray">/wk</span>
+                </div>
+                <button className="btn mt-auto full-width text-neon-purple" style={{ border: '1px solid var(--neon-purple)', background: 'transparent', opacity: 0.5 }}>Current Plan</button>
+            </div>
+        </div>
+    );
+}
+
+function LiveMonitoring() {
+    return (
+        <div className="monitoring-grid">
+            <div className="glass-card span-2 flex-center flex-column text-center">
+                <i className="fa-solid fa-shield-check text-neon-green drop-glow-green" style={{ fontSize: '4rem', marginBottom: '1rem' }}></i>
+                <h2 className="text-neon-green drop-glow-green mb-1">Condition: SAFE</h2>
+                <p className="text-gray" style={{ maxWidth: '28rem' }}>No active triggers in your delivery radius.</p>
+            </div>
+            <div className="glass-card flex-center flex-column">
+                <i className="fa-solid fa-satellite-dish text-neon-blue drop-glow-blue" style={{ fontSize: '3rem', marginBottom: '1rem' }}></i>
+                <h3 className="text-white">Telemetry Sync</h3>
+                <p className="text-neon-green mt-1 text-sm">Connected & Tracking</p>
+            </div>
+        </div>
+    );
+}
+
+function Wallet() {
+    return (
+        <div className="wallet-grid">
+            <div className="glass-card flex-between span-2 border-neon-blue">
+                <div>
+                    <h3 className="text-gray mb-1">Available Balance</h3>
+                    <h1 className="text-neon-blue drop-glow-blue" style={{ fontSize: '2.25rem', marginBottom: '0.5rem' }}>₹ 1,450.00</h1>
+                    <p className="text-sm text-gray">Pending AI processing: <span className="text-neon-yellow">₹ 200.00</span></p>
+                </div>
+                <div>
+                    <button className="btn bg-neon-blue text-dark glow-btn-blue border-none" style={{ borderRadius: '9999px', padding: '0.75rem 1.5rem', fontWeight: 700 }}>
+                        <i className="fa-solid fa-building-columns"></i> Withdraw to UPI
+                    </button>
+                </div>
+            </div>
+            <div className="glass-card">
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-light)', marginBottom: '1rem' }}>Auto-Payout Triggers</h3>
+                <div className="flex-between glass-panel border-l-neon-blue" style={{ padding: '0.75rem', borderRadius: 'var(--border-radius-sm)', marginBottom: '0.5rem' }}>
+                    <h4 className="text-sm">Heavy Rain <span className="text-neon-green ml-2">₹200</span></h4>
+                    <CustomToggle defaultActive={true} />
+                </div>
+                <div className="flex-between glass-panel border-l-neon-pink" style={{ padding: '0.75rem', borderRadius: 'var(--border-radius-sm)' }}>
+                    <h4 className="text-sm">AQI &gt; 300 <span className="text-neon-green ml-2">₹150</span></h4>
+                    <CustomToggle defaultActive={false} />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function RiskInsights() {
+     const predictData = {
+        labels: ['8 AM', '10 AM', '12 PM', '2 PM', '4 PM', '6 PM', '8 PM'],
+        datasets: [
+            { label: 'Waterlogging %', data: [10, 5, 20, 60, 85, 40, 15], backgroundColor: 'rgba(181, 53, 255, 0.7)', borderRadius: 4 },
+            { label: 'Traffic %', data: [50, 65, 45, 40, 60, 90, 70], backgroundColor: 'rgba(0, 240, 255, 0.7)', borderRadius: 4 }
+        ]
+    };
+    const options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 12, usePointStyle: true } } }, scales: { y: { beginAtZero: true, max: 100 }, x: { grid: { display: false } } } };
+
+    return (
+        <div className="insights-grid">
+            <div className="glass-card span-2 border-neon-purple">
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-light)', marginBottom: '1rem' }}>Risk Probability Density</h3>
+                <div style={{ width: '100%', height: '16rem' }}>
+                    <ChartWrapper type="bar" data={predictData} options={options} />
+                </div>
+            </div>
+            <div className="glass-card flex-column content-between">
+                <div>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-light)', marginBottom: '0.25rem' }}>Disruption Probability</h3>
+                    <div className="text-center" style={{ margin: '1rem 0' }}>
+                        <h1 className="text-neon-pink drop-glow-pink" style={{ fontSize: '3rem' }}>34%</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function Profile() {
+    return (
+        <div className="profile-grid">
+            <div className="glass-card flex-column text-center border-neon-purple" style={{ paddingTop: '1.5rem', paddingBottom: '1.5rem', alignItems: 'center' }}>
+                <img src="https://i.pravatar.cc/150?img=11" alt="User" style={{ borderRadius: '50%', border: '2px solid var(--neon-purple)', width: '6rem', height: '6rem', marginBottom: '1rem' }} />
+                <h2 className="text-white">Rahul Verma</h2>
+                <p className="text-neon-purple text-sm mb-2">ID: RS-49281</p>
+                <div className="flex-between w-full" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--text-gray-dark)' }}>
+                  <div className="flex-column"><span className="text-white" style={{ fontSize: '1.25rem' }}>4.8 <i className="fa-solid fa-star text-neon-yellow"></i></span></div>
+                  <div className="flex-column"><span className="text-white" style={{ fontSize: '1.25rem' }}>1,240</span><span className="text-gray text-xs">Deliveries</span></div>
+                </div>
+            </div>
+            <div className="glass-card span-2">
+                <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-light)', marginBottom: '1rem' }}>App Preferences</h3>
+                <div className="flex-between" style={{ background: 'rgba(0,0,0,0.3)', padding: '0.75rem', borderRadius: 'var(--border-radius-sm)', marginBottom: '1rem' }}>
+                  <h4 className="text-white text-sm">Share real-time telemetry</h4>
+                  <CustomToggle defaultActive={true} />
+                </div>
+                <div className="flex-between" style={{ background: 'rgba(0,0,0,0.3)', padding: '0.75rem', borderRadius: 'var(--border-radius-sm)' }}>
+                  <h4 className="text-white text-sm">Auto-claim triggers</h4>
+                  <CustomToggle defaultActive={true} />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// --- MAIN APP (SHELL) ---
+
+function App() {
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    const isLoggedOut = location.pathname === '/login' || location.pathname === '/';
+
+    const handleLogout = () => {
+        localStorage.removeItem('riskshield_logged_in');
+        navigate('/login');
+    };
+
+    const getPageTitle = () => {
+        switch (location.pathname) {
+            case '/dashboard': return 'Overview';
+            case '/plans': return 'Plan Selection';
+            case '/live': return 'Live Monitoring';
+            case '/wallet': return 'Wallet & Payouts';
+            case '/insights': return 'Risk Insights';
+            case '/profile': return 'Profile Settings';
+            default: return 'Overview';
+        }
+    };
+
+    if (isLoggedOut) {
+        return (
+            <Routes>
+                <Route path="*" element={<Login />} />
+            </Routes>
+        );
+    }
+
+    return (
+        <div className="app-container">
+            <aside className={`sidebar glass-panel ${sidebarOpen ? 'open' : ''}`}>
+                <div className="logo" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0 1.5rem', marginBottom: '2.5rem', fontWeight: 700, fontSize: '1.25rem' }}>
+                    <i className="fa-solid fa-shield-halved text-neon-blue drop-glow-blue" style={{ fontSize: '1.5rem' }}></i>
+                    <span>RiskShield <span className="text-neon-purple drop-glow-purple">AI</span></span>
                 </div>
                 
-                <div class="topbar-actions">
-                    <div class="action-icon has-badge hover-glow-blue">
-                        <i class="fa-solid fa-bell"></i>
-                        <span class="badge bg-neon-pink">2</span>
+                <nav className="nav-menu" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0 1rem', flexGrow: 1 }}>
+                    <NavLink to="/dashboard" onClick={() => setSidebarOpen(false)} className={({isActive}) => 'nav-item ' + (isActive ? 'active' : '')}>
+                        <i className="fa-solid fa-chart-pie" style={{ width: '20px', textAlign: 'center' }}></i> <span>Dashboard</span>
+                    </NavLink>
+                    <NavLink to="/plans" onClick={() => setSidebarOpen(false)} className={({isActive}) => 'nav-item ' + (isActive ? 'active' : '')}>
+                        <i className="fa-solid fa-layer-group" style={{ width: '20px', textAlign: 'center' }}></i> <span>Plans</span>
+                    </NavLink>
+                    <NavLink to="/live" onClick={() => setSidebarOpen(false)} className={({isActive}) => 'nav-item ' + (isActive ? 'active' : '')}>
+                        <i className="fa-solid fa-satellite-dish" style={{ width: '20px', textAlign: 'center' }}></i> <span>Live Monitor</span>
+                    </NavLink>
+                    <NavLink to="/wallet" onClick={() => setSidebarOpen(false)} className={({isActive}) => 'nav-item ' + (isActive ? 'active' : '')}>
+                        <i className="fa-solid fa-wallet" style={{ width: '20px', textAlign: 'center' }}></i> <span>Wallet</span>
+                    </NavLink>
+                    <NavLink to="/insights" onClick={() => setSidebarOpen(false)} className={({isActive}) => 'nav-item ' + (isActive ? 'active' : '')}>
+                        <i className="fa-solid fa-brain" style={{ width: '20px', textAlign: 'center' }}></i> <span>Insights</span>
+                    </NavLink>
+                    <NavLink to="/profile" onClick={() => setSidebarOpen(false)} className={({isActive}) => 'nav-item ' + (isActive ? 'active' : '')}>
+                        <i className="fa-solid fa-user-astronaut" style={{ width: '20px', textAlign: 'center' }}></i> <span>Profile</span>
+                    </NavLink>
+                    <button onClick={handleLogout} className="nav-item" style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--text-gray-dark)', color: 'var(--neon-pink)', background: 'transparent', textAlign: 'left', width: '100%' }}>
+                        <i className="fa-solid fa-arrow-right-from-bracket" style={{ width: '20px', textAlign: 'center' }}></i> <span>Logout</span>
+                    </button>
+                </nav>
+            </aside>
+
+            <main className="main-content">
+                <header className="topbar glass-panel">
+                    <div className="mobile-menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)} style={{ cursor: 'pointer', fontSize: '1.25rem' }}>
+                        <i className="fa-solid fa-bars"></i>
                     </div>
-                    <div class="user-profile">
-                        <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar" class="avatar glow-border-purple">
-                        <div class="user-info">
-                            <span class="name">Rahul Verma</span>
-                            <span class="rank text-neon-blue">Diamond Tier</span>
+                    <div className="header-title">
+                        <h2 style={{ fontWeight: 600, fontSize: '1.5rem' }}>{getPageTitle()}</h2>
+                    </div>
+                    <div className="topbar-actions" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                        <div className="user-profile" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                            <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar" style={{ width: '44px', height: '44px', borderRadius: '50%', border: '2px solid var(--neon-purple)' }} />
+                            <div className="user-info" style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span className="name" style={{ fontWeight: 600, fontSize: '0.9rem' }}>Rahul Verma</span>
+                                <span className="rank text-neon-blue" style={{ fontSize: '0.75rem', fontWeight: 500 }}>Diamond Tier</span>
+                            </div>
                         </div>
                     </div>
+                </header>
+
+                <div className="pages-container">
+                    <Routes>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/plans" element={<Plans />} />
+                        <Route path="/live" element={<LiveMonitoring />} />
+                        <Route path="/wallet" element={<Wallet />} />
+                        <Route path="/insights" element={<RiskInsights />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                    </Routes>
                 </div>
-            </header>
+            </main>
+        </div>
+    );
+}
 
-            <!-- Page Container (IFRAME) -->
-            <div class="pages-container" style="padding: 0; overflow: hidden;">
-                <iframe id="content-frame" name="content-frame" src="login.html"></iframe>
-            </div>
-        </main>
-    </div>
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+    <HashRouter>
+        <App />
+    </HashRouter>
+);
 
-    <!-- Scripts -->
-    <script src="app.js"></script>
+</script>
 </body>
 </html>
