@@ -192,12 +192,3 @@ if (income < 500) risk += 10;
 - 📊 Advanced analytics & predictions  
 
 ---
-
-## 🏆 Hackathon Value
-
-- Solves a **real-world problem (Gig Worker Safety)**  
-- Demonstrates **AI + product thinking**  
-- Clean **UI/UX and modular design**  
-- Strong **scalability vision**  
-
----
