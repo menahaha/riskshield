@@ -1,103 +1,95 @@
-🚀 RiskShield AI
-AI-Powered Safety & Insurance Platform for Gig Workers
-🧠 Overview
+# 🚀 RiskShield AI  
+### AI-Powered Safety & Insurance Platform for Gig Workers
 
-RiskShield AI is an intelligent platform designed to improve the safety and financial security of gig workers such as delivery partners and ride operators (Swiggy, Zomato, Blinkit, Zepto, etc.).
+---
 
-It analyzes real-world working conditions and generates a dynamic risk score, helping workers make informed decisions and choose the right insurance plans.
+## 🧠 Overview
 
-⚠️ Prototype Notice
+**RiskShield AI** is an intelligent platform designed to improve the safety and financial security of gig workers such as delivery partners and ride operators (**Swiggy, Zomato, Blinkit, Zepto**, etc.).
 
-This project is a functional prototype built for demonstration and rapid development.
+It analyzes real-world working conditions and generates a **dynamic risk score**, helping workers make informed decisions and choose the right insurance plans.
 
-Uses localStorage as a simulated database
+---
 
-Implements rule-based AI logic (can be upgraded to ML models)
+## ⚠️ Prototype Notice
 
-Designed with scalability in mind
+This project is a **functional prototype** built for demonstration and rapid development.
 
-👉 Future versions will include backend integration, real-time APIs, and cloud deployment.
+- Uses **localStorage** as a simulated database  
+- Implements **rule-based AI logic** *(upgradeable to ML models)*  
+- Designed with **scalability in mind**  
 
-✨ Features
-🔐 Authentication
+👉 Future versions will include **backend integration, real-time APIs, and cloud deployment**
 
-User registration & login
+---
 
-Session handling with localStorage
+## ✨ Features
 
-Protected routes
+### 🔐 Authentication
+- User registration & login  
+- Session handling using **localStorage**  
+- Protected routes  
 
-🧾 Smart Registration
+---
 
+### 🧾 Smart Registration
 Collects detailed worker data:
+- 👤 Name, email, password  
+- 🏢 Company & work type  
+- 💰 Income & working hours  
+- ⚠️ Risk factors *(rain, night shift, vehicle)*  
 
-Name, email, password
+---
 
-Company & work type
+### 🤖 AI Risk Prediction
+Generates a **risk score (0–100)** based on:
 
-Income & working hours
+- 🌧 Weather exposure  
+- 🌙 Night shifts  
+- 🏍 Vehicle type  
+- ⏱ Work hours  
+- 💸 Income level  
 
-Risk factors (rain, night shift, vehicle)
+---
 
-🤖 AI Risk Prediction
+### 📊 Dashboard
+- Real-time **risk score visualization**  
+- Risk classification:
+  - 🟢 **Low Risk**  
+  - 🟡 **Moderate Risk**  
+  - 🔴 **High Risk**  
+- Risk explanations  
+- Risk history tracking  
 
-Generates a risk score (0–100) based on:
+---
 
-🌧 Weather exposure
+### 💼 Plans & Recommendations
+- Basic / Standard / Premium AI plans  
+- Smart recommendations based on user risk  
 
-🌙 Night shifts
+---
 
-🏍 Vehicle type
+### 📡 Additional Modules
+- 📈 Risk Insights *(charts & analytics)*  
+- 💰 Wallet system *(mock payouts)*  
+- 🛰 Live Monitoring *(simulation)*  
+- 👤 Dynamic user profile  
 
-⏱ Work hours
+---
 
-💰 Income level
+## 🏗 Tech Stack
 
-📊 Dashboard
+- **Frontend:** React (CDN + Babel)  
+- **Routing:** React Router (HashRouter)  
+- **Styling:** Custom CSS (Neon UI Theme)  
+- **Charts:** Chart.js  
+- **Storage:** localStorage (Simulated Database)  
 
-Real-time risk score visualization
+---
 
-Risk classification:
+## 🧩 Architecture
 
-🟢 Low
-
-🟡 Moderate
-
-🔴 High
-
-Risk explanations
-
-Risk history tracking
-
-💼 Plans & Recommendations
-
-Basic / Standard / Premium AI plans
-
-Smart recommendations based on risk level
-
-📡 Additional Modules
-
-📈 Risk Insights (charts & analytics)
-
-💰 Wallet system (mock payouts)
-
-🛰 Live Monitoring simulation
-
-👤 Dynamic user profile
-
-🏗 Tech Stack
-
-Frontend: React (CDN + Babel)
-
-Routing: React Router (HashRouter)
-
-Styling: Custom CSS (Neon UI Theme)
-
-Charts: Chart.js
-
-Storage: localStorage (Simulated Database)
-
-🧩 Architecture
+```
 User Input (Register)
         ↓
 AI Risk Calculator
@@ -105,89 +97,107 @@ AI Risk Calculator
 localStorage (Database)
         ↓
 Dashboard (Visualization + Insights)
-⚙️ How It Works
+```
 
-User registers and enters work-related details
+---
 
-System calculates risk score using AI logic
+## ⚙️ How It Works
 
-Data is stored in localStorage
+1. User registers and enters work-related details  
+2. System calculates **risk score using AI logic**  
+3. Data is stored in **localStorage**  
+4. User logs in  
+5. Dashboard displays:
+   - Risk score  
+   - Risk breakdown  
+   - Risk history  
 
-User logs in
+---
 
-Dashboard displays:
+## 🚀 Getting Started
 
-Risk score
+### 1. Clone the repository
 
-Risk breakdown
-
-Risk history
-
-🚀 Getting Started
-1. Clone the repository
+```bash
 git clone https://github.com/menahaha/riskshield.git
-2. Navigate into the project
+```
+
+---
+
+### 2. Navigate into the project
+
+```bash
 cd riskshield
-3. Run the app
+```
+
+---
+
+### 3. Run the app
 
 Simply open:
 
+```bash
 index.html
+```
 
-👉 No installation required — runs directly in browser
+👉 No installation required — runs directly in browser  
 
-🧪 Demo Flow
+---
 
-Click Create Account
+## 🧪 Demo Flow
 
-Fill realistic worker data
+- Click **Create Account**  
+- Fill realistic worker data  
+- Submit → auto-login  
+- Explore dashboard:
+  - Risk score  
+  - Insights  
+  - Recommendations  
+- Logout and test login  
 
-Submit → auto-login
+---
 
-Explore dashboard:
+## 🧠 Core AI Logic
 
-Risk score
-
-Insights
-
-Recommendations
-
-Logout and test login
-
-🧠 Core AI Logic
+```js
 if (rain) risk += 20;
 if (night) risk += 15;
 if (vehicle === "Bike") risk += 15;
 if (hours > 10) risk += 20;
 if (income < 500) risk += 10;
+```
 
-👉 Final score capped at 100
+👉 Final score is capped at **100**
 
-📌 Key Highlights
+---
 
-⚡ No backend required
+## 📌 Key Highlights
 
-🧠 AI-driven logic
+- ⚡ No backend required *(lightweight prototype)*  
+- 🧠 AI-driven decision logic  
+- 🎨 Clean and modern UI  
+- 📦 Modular architecture  
+- 🔄 Easily scalable to full-stack  
 
-🎨 Clean modern UI
+---
 
-📦 Modular architecture
+## 🔮 Future Improvements
 
-🔄 Easily scalable
+- 📱 Mobile Application *(React Native / Flutter)*  
+- 🔐 Backend integration *(Node.js / Firebase)*  
+- 🌦 Real-time weather API  
+- 📍 Location-based risk zones  
+- 🤖 Machine Learning model  
+- ☁️ Cloud database with multi-device sync  
+- 📊 Advanced analytics & predictions  
 
-🔮 Future Improvements
+---
 
-📱 Mobile Application (React Native / Flutter)
+## 🏆 Hackathon Value
 
-🔐 Backend integration (Node.js / Firebase)
+- Solves a **real-world problem (Gig Worker Safety)**  
+- Demonstrates **AI + product thinking**  
+- Clean **UI/UX and modular design**  
+- Strong **scalability vision**  
 
-🌦 Real-time weather API
-
-📍 Location-based risk zones
-
-🤖 Machine Learning model
-
-☁️ Cloud database & sync
-
-📊 Advanced analytics
-
+---
