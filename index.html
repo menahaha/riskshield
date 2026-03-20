@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+(<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -66,16 +66,63 @@ function ChartWrapper({ type, data, options }) {
 
     return <canvas ref={canvasRef}></canvas>;
 }
+const DB = {
+    getUsers: () => {
+        return JSON.parse(localStorage.getItem("users")) || [];
+    },
+
+    saveUsers: (users) => {
+        localStorage.setItem("users", JSON.stringify(users));
+    },
+
+    addUser: (user) => {
+        const users = DB.getUsers();
+        users.push(user);
+        DB.saveUsers(users);
+    },
+
+    findUser: (email, password) => {
+        const users = DB.getUsers();
+        return users.find(
+            (u) => u.email === email && u.password === password
+        );
+    }
+};
+function calculateRisk(data) {
+    let risk = 0;
+
+    if (data.rain) risk += 20;
+    if (data.night) risk += 15;
+
+    if (data.vehicle === "Bike") risk += 15;
+    if (data.vehicle === "Cycle") risk += 10;
+
+    if (data.hours > 10) risk += 20;
+    if (data.income < 500) risk += 10;
+
+    return Math.min(risk, 100);
+}
 
 // --- PAGE COMPONENTS ---
 
 function Login() {
     const navigate = useNavigate();
     const handleLogin = (e) => {
-        e.preventDefault();
-        localStorage.setItem('riskshield_logged_in', 'true');
-        navigate('/dashboard');
-    };
+    e.preventDefault();
+
+    const email = e.target[0].value;
+    const password = e.target[1].value;
+
+    const user = DB.findUser(email, password);
+
+    if (user) {
+        localStorage.setItem("riskshield_logged_in", "true");
+        localStorage.setItem("currentUser", JSON.stringify(user));
+        navigate("/dashboard");
+    } else {
+        alert("Invalid credentials");
+    }
+};
 
     return (
         <div className="login-wrapper">
@@ -217,11 +264,36 @@ function Register() {
     };
 
     const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log(formData);
-        alert("Registered Successfully!");
-        navigate("/login");
-    };
+    e.preventDefault();
+    const existing = DB.getUsers().find(u => u.email === formData.email);
+
+if (existing) {
+    alert("User already exists");
+    return;
+}
+    const riskScore = calculateRisk(formData);
+
+    const user = {
+    ...formData,
+    riskScore,
+    id: Date.now(),
+    history: [
+        {
+            date: new Date().toLocaleString(),
+            risk: riskScore
+        }
+    ]
+};
+
+    DB.addUser(user);
+
+    alert("Registered! Risk Score: " + riskScore);
+
+    localStorage.setItem("currentUser", JSON.stringify(user));
+localStorage.setItem("riskshield_logged_in", "true");
+
+navigate("/dashboard");
+};
 
     return (
         <FormContainer
@@ -285,9 +357,27 @@ function Register() {
     );
 }
 function Dashboard() {
+    useEffect(() => {
+    const interval = setInterval(() => {
+        console.log("Simulating live risk update...");
+    }, 5000);
+
+    return () => clearInterval(interval);
+}, []);
+    const user = JSON.parse(localStorage.getItem("currentUser")) || {};
+    let riskLabel = "Low Risk";
+let riskColor = "text-neon-green";
+
+if (user.riskScore > 60) {
+    riskLabel = "High Risk";
+    riskColor = "text-neon-pink";
+} else if (user.riskScore > 30) {
+    riskLabel = "Moderate Risk";
+    riskColor = "text-neon-yellow";
+}
     const riskData = {
         labels: ['Risk', 'Safe'],
-        datasets: [{ data: [28, 72], backgroundColor: ['rgba(255, 255, 255, 0.05)', '#ffea00'], borderWidth: 0, cutout: '80%' }]
+        datasets: [{ data: [100 - (user?.riskScore || 0), user?.riskScore || 0], backgroundColor: ['rgba(255, 255, 255, 0.05)', '#ffea00'], borderWidth: 0, cutout: '80%' }]
     };
 
     const riskOptions = {
@@ -321,6 +411,7 @@ function Dashboard() {
     };
 
     return (
+    <>
         <div className="dashboard-grid">
             <div className="glass-card flex-center flex-column">
                 <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-light)' }}>
@@ -339,14 +430,19 @@ function Dashboard() {
                         alignItems: 'baseline'
                     }}>
                         <span className="text-neon-yellow" style={{ fontSize: '2.5rem', fontWeight: 700 }}>
-                            72
+                            {user?.riskScore || 0}
                         </span>
                     </div>
                 </div>
 
-                <p className="text-neon-yellow drop-glow-yellow mt-1 text-sm">
-                    Moderate Risk - Traffic high
-                </p>
+                <p className={`${riskColor} mt-1 text-sm`}>
+    {riskLabel}
+</p>
+                <div className="mt-2 text-sm text-gray">
+    {user?.rain && <p>🌧 Rain increases risk</p>}
+    {user?.night && <p>🌙 Night shift risk</p>}
+    {user?.vehicle === "Bike" && <p>🏍 Bike = higher risk</p>}
+</div>
             </div>
 
             <div className="glass-card">
@@ -369,7 +465,17 @@ function Dashboard() {
                 </p>
             </div>
         </div>
-    );
+
+<div className="glass-card mt-2">
+    <h3>Risk History</h3>
+    {user?.history?.map((h, i) => (
+        <p key={i}>
+            {h.date} → {h.risk}
+        </p>
+    ))}
+</div>
+</>
+);
 }
 function Plans() {
     return (
@@ -485,12 +591,17 @@ function RiskInsights() {
 }
 
 function Profile() {
+    const user = JSON.parse(localStorage.getItem("currentUser")) || {};
     return (
         <div className="profile-grid">
             <div className="glass-card flex-column text-center border-neon-purple" style={{ paddingTop: '1.5rem', paddingBottom: '1.5rem', alignItems: 'center' }}>
-                <img src="https://i.pravatar.cc/150?img=11" alt="User" style={{ borderRadius: '50%', border: '2px solid var(--neon-purple)', width: '6rem', height: '6rem', marginBottom: '1rem' }} />
-                <h2 className="text-white">Rahul Verma</h2>
-                <p className="text-neon-purple text-sm mb-2">ID: RS-49281</p>
+                <div className="profile-placeholder">
+    <i className="fa-solid fa-user"></i>
+</div>
+                <h2 className="text-white">{user?.name || "User"}</h2>
+                <p className="text-neon-purple text-sm mb-2">
+    ID: RS-{user?.id?.toString().slice(-5) || "00000"}
+</p>
                 <div className="flex-between w-full" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--text-gray-dark)' }}>
                   <div className="flex-column"><span className="text-white" style={{ fontSize: '1.25rem' }}>4.8 <i className="fa-solid fa-star text-neon-yellow"></i></span></div>
                   <div className="flex-column"><span className="text-white" style={{ fontSize: '1.25rem' }}>1,240</span><span className="text-gray text-xs">Deliveries</span></div>
@@ -518,15 +629,18 @@ function App() {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const isLoggedOut =
-    location.pathname === '/login' ||
-    location.pathname === '/' ||
-    location.pathname === '/register';
+    const isAuthenticated =
+    localStorage.getItem("riskshield_logged_in") === "true";
+
+const isAuthPage =
+    location.pathname === "/login" ||
+    location.pathname === "/register";
 
     const handleLogout = () => {
-        localStorage.removeItem('riskshield_logged_in');
-        navigate('/login');
-    };
+    localStorage.removeItem("riskshield_logged_in");
+    localStorage.removeItem("currentUser");
+    navigate("/login");
+};
 
     const getPageTitle = () => {
         switch (location.pathname) {
@@ -539,17 +653,22 @@ function App() {
             default: return 'Overview';
         }
     };
+const user = JSON.parse(localStorage.getItem("currentUser")) || {};
 
-    if (isLoggedOut) {
+if (!isAuthenticated) {
     return (
         <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="*" element={<Login />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
     );
 }
 
+// If logged in and tries to access login/register → redirect
+if (isAuthenticated && isAuthPage) {
+    return <Navigate to="/dashboard" replace />;
+}
     return (
         <div className="app-container">
             <aside className={`sidebar glass-panel ${sidebarOpen ? 'open' : ''}`}>
@@ -595,7 +714,7 @@ function App() {
                         <div className="user-profile" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
                             <img src="https://i.pravatar.cc/150?img=11" alt="User Avatar" style={{ width: '44px', height: '44px', borderRadius: '50%', border: '2px solid var(--neon-purple)' }} />
                             <div className="user-info" style={{ display: 'flex', flexDirection: 'column' }}>
-                                <span className="name" style={{ fontWeight: 600, fontSize: '0.9rem' }}>Rahul Verma</span>
+                                <span className="name">{user?.name || "User"}</span>
                                 <span className="rank text-neon-blue" style={{ fontSize: '0.75rem', fontWeight: 500 }}>Diamond Tier</span>
                             </div>
                         </div>
@@ -628,3 +747,4 @@ root.render(
 </script>
 </body>
 </html>
+)
